@@ -198,7 +198,7 @@ static int frankenphp_worker_request_startup() {
 
     php_hash_environment();
 
-    zend_is_auto_global(ZSTR_KNOWN(ZEND_STR_AUTOGLOBAL_SERVER));
+    zend_is_auto_global_str(ZEND_STRL("_SERVER"));
 
     // unfinish the request
     frankenphp_server_context *ctx = SG(server_context);
@@ -222,6 +222,8 @@ static int frankenphp_worker_request_startup() {
 
   return retval;
 }
+
+#define RETURN_THROWS()					do { ZEND_ASSERT(EG(exception)); (void) return_value; return; } while (0)
 
 PHP_FUNCTION(frankenphp_finish_request) { /* {{{ */
   if (zend_parse_parameters_none() == FAILURE) {
@@ -496,7 +498,7 @@ int frankenphp_update_server_context(
 }
 
 static int frankenphp_startup(sapi_module_struct *sapi_module) {
-  return php_module_startup(sapi_module, &frankenphp_module);
+  return php_module_startup(sapi_module, &frankenphp_module, 0);
 }
 
 static int frankenphp_deactivate(void) {
@@ -846,10 +848,7 @@ int frankenphp_execute_script(char *file_name) {
 
   zend_file_handle file_handle;
   zend_stream_init_filename(&file_handle, file_name);
-  free(file_name);
-  file_name = NULL;
-
-  file_handle.primary_script = 1;
+  // do not free file_name
 
   zend_first_try {
     EG(exit_status) = 0;

@@ -13,14 +13,15 @@ package frankenphp
 // We also set these flags for hardening: https://github.com/docker-library/php/blob/master/8.2/bookworm/zts/Dockerfile#L57-L59
 
 // #cgo darwin pkg-config: libxml-2.0
-// #cgo CFLAGS: -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_WINDOWS -DWINDOWS=1 -DZEND_WIN32=1 -DPHP_WIN32=1 -DWIN32 -D_MBCS -D_USE_MATH_DEFINES -DNDebug -DNDEBUG -DZEND_DEBUG=0 -DZTS=1 -DFD_SETSIZE=256 -D_POSIX
-// #cgo CFLAGS: -IC:/msys64/usr/local/include/php8.3 -IC:/msys64/usr/local/include/php8.3/main -IC:/msys64/usr/local/include/php8.3/TSRM -IC:/msys64/usr/local/include/php8.3/Zend -IC:/msys64/usr/local/include/php8.3/ext
+// #cgo CFLAGS: -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 
+// #cgo CFLAGS: -D_WINDOWS -DWINDOWS=1 -DZEND_WIN32=1 -DPHP_WIN32=1 -DWIN32 -D_MBCS -D_USE_MATH_DEFINES -DNDebug -DNDEBUG -DZEND_WIN32_FORCE_INLINE -DZEND_DEBUG=0 -DZTS=1 -DFD_SETSIZE=256
+// #cgo CFLAGS: -IC:/msys64/usr/local/include/php7.4 -IC:/msys64/usr/local/include/php7.4/ext -IC:/msys64/usr/local/include/php7.4/main -IC:/msys64/usr/local/include/php7.4/sapi -IC:/msys64/usr/local/include/php7.4/TSRM -IC:/msys64/usr/local/include/php7.4/win32 -IC:/msys64/usr/local/include/php7.4/Zend
 // #cgo CFLAGS: -DTHREAD_NAME=frankenphp
 // #cgo linux CFLAGS: -D_GNU_SOURCE
 // #cgo CPPFLAGS: -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 // #cgo darwin LDFLAGS: -L/opt/homebrew/opt/libiconv/lib -liconv
 // #cgo linux LDFLAGS: -Wl,-O1 -lresolv
-// #cgo LDFLAGS: -pie -LC:/msys64/usr/local/lib -lphp8ts -lphp8embed -lbrotlicommon -lbrotlidec -lbrotlienc
+// #cgo LDFLAGS: -pie -LC:/msys64/usr/local/lib -lphp7ts -lphp7embed -lbrotlicommon -lbrotlidec -lbrotlienc
 // #include <stdlib.h>
 // #include <stdint.h>
 // #include <php_variables.h>
@@ -296,9 +297,9 @@ func Init(options ...Option) error {
 
 	config := Config()
 
-	if config.Version.MajorVersion < 8 || (config.Version.MajorVersion == 8 && config.Version.MinorVersion < 2) {
-		return InvalidPHPVersionError
-	}
+	// if config.Version.MajorVersion < 8 || (config.Version.MajorVersion == 8 && config.Version.MinorVersion < 2) {
+	// 	return InvalidPHPVersionError
+	// }
 
 	if config.ZTS {
 		if !config.ZendMaxExecutionTimers && runtime.GOOS == "linux" {
