@@ -10,18 +10,18 @@
 
 #if defined(__APPLE__)
 #include <AvailabilityMacros.h>
-#else
-#ifndef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE 200809L
-#endif
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE 500
-#endif
+// #else
+// #ifndef _POSIX_C_SOURCE
+// #define _POSIX_C_SOURCE 200809L
+// #endif
+// #ifndef _XOPEN_SOURCE
+// #define _XOPEN_SOURCE 500
+// #endif
 #endif
 #include <unistd.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <pthread.h>
 #include <errno.h>
 #include <time.h>
@@ -54,7 +54,8 @@
 #define TOSTRING(x) STRINGIFY(x)
 
 static volatile int threads_keepalive;
-static volatile int threads_on_hold;
+// disable thpool pause function module
+// static volatile int threads_on_hold;
 
 
 
@@ -114,7 +115,8 @@ typedef struct thpool_{
 
 static int  thread_init(thpool_* thpool_p, struct thread** thread_p, int id);
 static void* thread_do(struct thread* thread_p);
-static void  thread_hold(int sig_id);
+// disable thpool pause function module
+// static void  thread_hold(int sig_id);
 static void  thread_destroy(struct thread* thread_p);
 
 static int   jobqueue_init(jobqueue* jobqueue_p);
@@ -139,7 +141,8 @@ static void  bsem_wait(struct bsem *bsem_p);
 /* Initialise thread pool */
 struct thpool_* thpool_init(int num_threads){
 
-	threads_on_hold   = 0;
+	// disable thpool pause function module
+	// threads_on_hold   = 0;
 	threads_keepalive = 1;
 
 	if (num_threads < 0){
@@ -261,24 +264,24 @@ void thpool_destroy(thpool_* thpool_p){
 }
 
 
+// disable thpool pause function module
 /* Pause all threads in threadpool */
-void thpool_pause(thpool_* thpool_p) {
-	int n;
-	for (n=0; n < thpool_p->num_threads_alive; n++){
-		pthread_kill(thpool_p->threads[n]->pthread, SIGUSR1);
-	}
-}
+// void thpool_pause(thpool_* thpool_p) {
+// 	int n;
+// 	for (n=0; n < thpool_p->num_threads_alive; n++){
+// 		pthread_kill(thpool_p->threads[n]->pthread, SIGUSR1);
+// 	}
+// }
 
+// /* Resume all threads in threadpool */
+// void thpool_resume(thpool_* thpool_p) {
+//     // resuming a single threadpool hasn't been
+//     // implemented yet, meanwhile this suppresses
+//     // the warnings
+//     (void)thpool_p;
 
-/* Resume all threads in threadpool */
-void thpool_resume(thpool_* thpool_p) {
-    // resuming a single threadpool hasn't been
-    // implemented yet, meanwhile this suppresses
-    // the warnings
-    (void)thpool_p;
-
-	threads_on_hold = 0;
-}
+// 	threads_on_hold = 0;
+// }
 
 
 int thpool_num_threads_working(thpool_* thpool_p){
@@ -315,14 +318,15 @@ static int thread_init (thpool_* thpool_p, struct thread** thread_p, int id){
 }
 
 
+// disable thpool pause function module
 /* Sets the calling thread on hold */
-static void thread_hold(int sig_id) {
-    (void)sig_id;
-	threads_on_hold = 1;
-	while (threads_on_hold){
-		sleep(1);
-	}
-}
+// static void thread_hold(int sig_id) {
+//     (void)sig_id;
+// 	threads_on_hold = 1;
+// 	while (threads_on_hold){
+// 		sleep(1);
+// 	}
+// }
 
 
 /* What each thread is doing
@@ -335,33 +339,35 @@ static void thread_hold(int sig_id) {
 */
 static void* thread_do(struct thread* thread_p){
 
-	/* Set thread name for profiling and debugging */
-	char thread_name[16] = {0};
+// Although MigW-W64 support pthread_setname_np, it hard to use in this case
+// 	/* Set thread name for profiling and debugging */
+// 	char thread_name[16] = {0};
 
-	snprintf(thread_name, 16, TOSTRING(THPOOL_THREAD_NAME) "-%d", thread_p->id);
+// 	snprintf(thread_name, 16, TOSTRING(THPOOL_THREAD_NAME) "-%d", thread_p->id);
 
-#if defined(__linux__)
-	/* Use prctl instead to prevent using _GNU_SOURCE flag and implicit declaration */
-	prctl(PR_SET_NAME, thread_name);
-#elif defined(__APPLE__) && defined(__MACH__)
-	pthread_setname_np(thread_name);
-#elif defined(__FreeBSD__) || defined(__OpenBSD__)
-    pthread_set_name_np(thread_p->pthread, thread_name);
-#else
-	err("thread_do(): pthread_setname_np is not supported on this system");
-#endif
+// #if defined(__linux__)
+// 	/* Use prctl instead to prevent using _GNU_SOURCE flag and implicit declaration */
+// 	prctl(PR_SET_NAME, thread_name);
+// #elif defined(__APPLE__) && defined(__MACH__)
+// 	pthread_setname_np(thread_name);
+// #elif defined(__FreeBSD__) || defined(__OpenBSD__)
+//     pthread_set_name_np(thread_p->pthread, thread_name);
+// #else
+// 	err("thread_do(): pthread_setname_np is not supported on this system");
+// #endif
 
 	/* Assure all threads have been created before starting serving */
 	thpool_* thpool_p = thread_p->thpool_p;
 
-	/* Register signal handler */
-	struct sigaction act;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = SA_ONSTACK;
-	act.sa_handler = thread_hold;
-	if (sigaction(SIGUSR1, &act, NULL) == -1) {
-		err("thread_do(): cannot handle SIGUSR1");
-	}
+	// disable thpool pause function module
+	// /* Register signal handler */
+	// struct sigaction act;
+	// sigemptyset(&act.sa_mask);
+	// act.sa_flags = SA_ONSTACK;
+	// act.sa_handler = thread_hold;
+	// if (sigaction(SIGUSR1, &act, NULL) == -1) {
+	// 	err("thread_do(): cannot handle SIGUSR1");
+	// }
 
 	/* Mark thread as alive (initialized) */
 	pthread_mutex_lock(&thpool_p->thcount_lock);

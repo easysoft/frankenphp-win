@@ -5,10 +5,6 @@
 // [FrankenPHP app server]: https://frankenphp.dev
 package frankenphp
 
-//go:generate rm -Rf C-Thread-Pool/
-//go:generate git clone --depth=1 git@github.com:Pithikos/C-Thread-Pool.git
-//go:generate rm -Rf C-Thread-Pool/.git C-Thread-Pool/.github C-Thread-Pool/docs C-Thread-Pool/tests C-Thread-Pool/example.c
-
 // Use PHP includes corresponding to your PHP installation by running:
 //
 //   export CGO_CFLAGS=$(php-config --includes)
@@ -17,14 +13,14 @@ package frankenphp
 // We also set these flags for hardening: https://github.com/docker-library/php/blob/master/8.2/bookworm/zts/Dockerfile#L57-L59
 
 // #cgo darwin pkg-config: libxml-2.0
-// #cgo CFLAGS: -Wall -Werror -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
-// #cgo CFLAGS: -I/usr/local/include/php -I/usr/local/include/php/main -I/usr/local/include/php/TSRM -I/usr/local/include/php/Zend -I/usr/local/include/php/ext -I/usr/local/include/php/ext/date/lib
+// #cgo CFLAGS: -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_WINDOWS -DWINDOWS=1 -DZEND_WIN32=1 -DPHP_WIN32=1 -DWIN32 -D_MBCS -D_USE_MATH_DEFINES -DNDebug -DNDEBUG -DZEND_DEBUG=0 -DZTS=1 -DFD_SETSIZE=256 -D_POSIX
+// #cgo CFLAGS: -IC:/msys64/usr/local/include/php8.3 -IC:/msys64/usr/local/include/php8.3/main -IC:/msys64/usr/local/include/php8.3/TSRM -IC:/msys64/usr/local/include/php8.3/Zend -IC:/msys64/usr/local/include/php8.3/ext
 // #cgo CFLAGS: -DTHREAD_NAME=frankenphp
 // #cgo linux CFLAGS: -D_GNU_SOURCE
 // #cgo CPPFLAGS: -fstack-protector-strong -fpic -fpie -O2 -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
 // #cgo darwin LDFLAGS: -L/opt/homebrew/opt/libiconv/lib -liconv
 // #cgo linux LDFLAGS: -Wl,-O1 -lresolv
-// #cgo LDFLAGS: -pie -L/usr/local/lib -L/usr/lib -lphp -ldl -lm -lutil
+// #cgo LDFLAGS: -pie -LC:/msys64/usr/local/lib -lphp8ts -lphp8embed -lbrotlicommon -lbrotlidec -lbrotlienc
 // #include <stdlib.h>
 // #include <stdint.h>
 // #include <php_variables.h>

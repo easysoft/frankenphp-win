@@ -118,7 +118,8 @@ void thpool_wait(threadpool);
  * @param threadpool    the threadpool where the threads should be paused
  * @return nothing
  */
-void thpool_pause(threadpool);
+// disable thpool pause function module
+// void thpool_pause(threadpool);
 
 
 /**
@@ -134,7 +135,8 @@ void thpool_pause(threadpool);
  * @param threadpool     the threadpool where the threads should be unpaused
  * @return nothing
  */
-void thpool_resume(threadpool);
+// disable thpool pause function module
+// void thpool_resume(threadpool);
 
 
 /**

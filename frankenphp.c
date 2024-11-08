@@ -7,7 +7,11 @@
 #include <ext/spl/spl_exceptions.h>
 #include <ext/standard/head.h>
 #include <php.h>
-#include <php_config.h>
+#ifdef PHP_WIN32
+  #include <config.w32.h>
+#else
+  #include <php_config.h>
+#endif
 #include <php_main.h>
 #include <php_output.h>
 #include <php_variables.h>
@@ -729,14 +733,15 @@ sapi_module_struct frankenphp_sapi_module = {
 static void *manager_thread(void *arg) {
   // SIGPIPE must be masked in non-Go threads:
   // https://pkg.go.dev/os/signal#hdr-Go_programs_that_use_cgo_or_SWIG
-  sigset_t set;
-  sigemptyset(&set);
-  sigaddset(&set, SIGPIPE);
+  // But windows does no support SIGPIPE
+  // sigset_t set;
+  // sigemptyset(&set);
+  // sigaddset(&set, SIGPIPE);
 
-  if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0) {
-    perror("failed to block SIGPIPE");
-    exit(EXIT_FAILURE);
-  }
+  // if (pthread_sigmask(SIG_BLOCK, &set, NULL) != 0) {
+  //   perror("failed to block SIGPIPE");
+  //   exit(EXIT_FAILURE);
+  // }
 
   int num_threads = *((int *)arg);
   free(arg);
